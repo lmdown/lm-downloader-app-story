@@ -1,39 +1,18 @@
-# LM Downloader App Story
+# LM Downloader Story
 
 #### 介绍
-{**以下是 Gitee 平台说明，您可以替换此简介**
-Gitee 是 OSCHINA 推出的基于 Git 的代码托管平台（同时支持 SVN）。专为开发者提供稳定、高效、安全的云端软件开发协作平台
-无论是个人、团队、或是企业，都能够用 Gitee 实现代码托管、项目管理、协作开发。企业项目请看 [https://gitee.com/enterprises](https://gitee.com/enterprises)}
+主要目标是管理整个应用可以动态发布和加载的内容，包括应用介绍的程序，及相关数据库文件等。
 
-#### 软件架构
-软件架构说明
-
-
-#### 安装教程
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 使用说明
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+#### 更新方案(每次启动时更新)
+- 客户端App不自带数据库、前端和后端程序。
+- 第一次启动时，显示加载中页面，在后台获取文件。
+- 第一次启动时，使用`git clone`获取`lmd-app-story`，会自带数据库，将自带的放到`lmd_data_root/db/`后，再启动应用的前端页面和本地服务。
+- 页面和本地服务启动后，开始检查新版本内容。就是直接调用git仓库的`index.json`文件，查看版本号。如果跟本地不同，则提示用户要重启。
+- 用户点击确认，再去`git pull`
+- pull完成后重启。
 
 
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+#### 目录
+- db
+- frontend
+- server
