@@ -1,0 +1,18 @@
+{
+    "desktop_app": {
+        "min_version": "1.0.0"
+    },
+    "frontend": {
+        "path": "frontend",
+        "depencencies": []
+    },
+    "server": {
+        "depencencies": [
+            "${MODULES_PREFIX}/server_node_modules_${ARCH}.zip"
+        ],
+        "path": "server"
+    },
+    "db": {
+        "app-story": "db/app-store.db"
+    }
+}

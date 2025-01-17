@@ -1,4 +1,4 @@
-# LM Downloader Story
+# LM Downloader App Story
 
 #### 介绍
 主要目标是管理整个应用可以动态发布和加载的内容，包括应用介绍的程序，及相关数据库文件等。
