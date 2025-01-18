@@ -64,6 +64,7 @@ var DEFAULT_LMD_BASE_CONFIG = {
 // src/util/ConfigPathUtil.ts
 var ConfigPathUtil = class _ConfigPathUtil {
   static CONFIG_FILE_NAME = "lmd_base_config.env";
+  static GLOBAL_ENV_FILE_NAME = "lmd_global_variables.env";
   static getRootDir() {
     const USER_HOME = process.env.HOME || process.env.USERPROFILE;
     const userDocumentsPath = path.join(USER_HOME, "Documents");
@@ -78,6 +79,10 @@ var ConfigPathUtil = class _ConfigPathUtil {
     const { rootDir } = _ConfigPathUtil.getRootDir();
     const configFilePath = path.join(rootDir, this.CONFIG_FILE_NAME);
     return configFilePath;
+  }
+  static getGlobalEnvFilePath() {
+    const { rootDir } = _ConfigPathUtil.getRootDir();
+    return path.join(rootDir, this.GLOBAL_ENV_FILE_NAME);
   }
 };
 
@@ -111,6 +116,10 @@ var ConfigUtil = class {
     const configFilePath = ConfigPathUtil.getConfigFilePath();
     const config = EnvUtil.getEnvFile(configFilePath);
     return config;
+  }
+  static getGlobalEnv() {
+    const envFilePath = ConfigPathUtil.getGlobalEnvFilePath();
+    return EnvUtil.getEnvFile(envFilePath);
   }
 };
 
@@ -1397,14 +1406,23 @@ var WSServer = class {
     this.expressApp = app2;
     this.setupEventHandlers();
   }
+  getFullEnvForApp() {
+    let fullEnv = process.env;
+    const baseConfig = ConfigUtil.getBaseConfig();
+    const globalEnv = ConfigUtil.getGlobalEnv();
+    fullEnv = Object.assign(fullEnv, baseConfig);
+    fullEnv = Object.assign(fullEnv, globalEnv);
+    return fullEnv;
+  }
   setupEventHandlers() {
     this.wss.on("connection", (ws) => {
+      const fullEnv = this.getFullEnvForApp();
       const ptyProcess = pty.spawn(shell, [], {
         name: "lmd-xterm",
         cols: 80,
         rows: 30,
         cwd: process.env.HOME,
-        env: process.env
+        env: fullEnv
       });
       ws.on("message", (res) => {
         const decoder = new TextDecoder("utf-8");
