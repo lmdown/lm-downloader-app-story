@@ -1083,7 +1083,11 @@ var CheckVersionUtil = class {
         appFullPath = import_path2.default.join(appInstallPath, envData._MAC_INSTALL_FILE_NAME);
       }
       if (envData._VERSION_DETECTABLE !== "0" && appFullPath) {
-        version = await this.checkVersion(appFullPath);
+        try {
+          version = await this.checkVersion(appFullPath);
+        } catch (err) {
+          console.error(err);
+        }
       }
       realVersionInfo = {
         version,
