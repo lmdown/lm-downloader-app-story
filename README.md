@@ -1,18 +1,10 @@
 # LM Downloader App Story
 
-#### 介绍
-主要目标是管理整个应用可以动态发布和加载的内容，包括应用介绍的程序，及相关数据库文件等。
+#### About this repo
+This repo include LMD AI Apps' story articles, and related databases.
 
-#### 更新方案(每次启动时更新)
-- 客户端App不自带数据库、前端和后端程序。
-- 第一次启动时，显示加载中页面，在后台获取文件。
-- 第一次启动时，使用`git clone`获取`lmd-app-story`，会自带数据库，将自带的放到`lmd_data_root/db/`后，再启动应用的前端页面和本地服务。
-- 页面和本地服务启动后，开始检查新版本内容。就是直接调用git仓库的`index.json`文件，查看版本号。如果跟本地不同，则提示用户要重启。
-- 用户点击确认，再去`git pull`
-- pull完成后重启。
-
-
-#### 目录
+#### Directories
 - db
 - frontend
 - server
+- story-assets
