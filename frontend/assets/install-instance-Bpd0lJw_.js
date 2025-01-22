@@ -1,0 +1,1 @@
+import{f as a}from"./index-DmcRzV4m.js";const s=async s=>(await a.post(`/self-manage/installed-instance/app/${s.id}`,s)).data,e=async s=>(await a.get(`/self-manage/installed-instance/${s}`)).data,t=async()=>(await a.get("/self-manage/installed-instance")).data,n=async s=>(await a.delete(`/self-manage/installed-instance/${s}`)).data;export{e as a,s as c,n as d,t as g};
