@@ -36,7 +36,7 @@ var env = (0, import_envalid.cleanEnv)(process.env, {
 
 // src/server.ts
 var import_pino = __toESM(require("pino"));
-var import_express6 = __toESM(require("express"));
+var import_express7 = __toESM(require("express"));
 
 // src/app-store/model/AIApp.ts
 var import_sequelize2 = require("sequelize");
@@ -1016,7 +1016,7 @@ function initModels2() {
   })();
 }
 
-// src/self-manage/router/InstalledAIAppRouters.ts
+// src/self-manage/router/InstalledInstanceRouters.ts
 var import_express5 = __toESM(require("express"));
 
 // src/self-manage/service/FileStorageInfoService.ts
@@ -1042,6 +1042,10 @@ var SystemCheckUtil = class {
   static isMacOS() {
     const platform = import_os.default.platform();
     return platform === "darwin";
+  }
+  static isWindows() {
+    const platform = import_os.default.platform();
+    return platform === "win32";
   }
 };
 
@@ -1077,24 +1081,29 @@ var CheckVersionUtil = class {
     let realVersionInfo;
     let appInstallPath;
     let appFullPath;
+    let fileName;
     if (SystemCheckUtil.isMacOS()) {
       appInstallPath = envData._MAC_INSTALL_PATH;
-      if (envData._MAC_INSTALL_FILE_NAME) {
-        appFullPath = import_path2.default.join(appInstallPath, envData._MAC_INSTALL_FILE_NAME);
-      }
-      if (envData._VERSION_DETECTABLE !== "0" && appFullPath) {
-        try {
-          version = await this.checkVersion(appFullPath);
-        } catch (err) {
-          console.error(err);
-        }
-      }
-      realVersionInfo = {
-        version,
-        appInstallPath,
-        appFullPath
-      };
+      fileName = envData._MAC_INSTALL_TARGET_FILE_NAME || envData._MAC_INSTALLER_FILE_NAME;
+    } else if (SystemCheckUtil.isWindows()) {
+      appInstallPath = envData._WINDOWS_INSTALL_PATH;
+      fileName = envData._WINDOWS_INSTALL_TARGET_FILE_NAME || envData._WINDOWS_INSTALLER_FILE_NAME;
     }
+    if (fileName) {
+      appFullPath = import_path2.default.join(appInstallPath, fileName);
+    }
+    if (envData._VERSION_DETECTABLE !== "0" && appFullPath) {
+      try {
+        version = await this.checkVersion(appFullPath);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    realVersionInfo = {
+      version,
+      appInstallPath,
+      appFullPath
+    };
     return realVersionInfo;
   }
   static async checkVersion(appFullFilePath) {
@@ -1242,7 +1251,7 @@ var InstalledInstanceService = class {
     return dto;
   }
   async fillRealVersion(dto, instance) {
-    const realVersionInfo = await CheckVersionUtil.checkVersionByName(instance.installName);
+    const realVersionInfo = await CheckVersionUtil.checkVersionByName(instance.installName) || {};
     dto.version = realVersionInfo.version;
     dto.appFullPath = realVersionInfo.appFullPath;
     dto.appInstallPath = realVersionInfo.appInstallPath;
@@ -1333,7 +1342,7 @@ var checkVersion = async (req, res) => {
   res.json(version);
 };
 
-// src/self-manage/router/InstalledAIAppRouters.ts
+// src/self-manage/router/InstalledInstanceRouters.ts
 var router5 = import_express5.default.Router();
 router5.get("/", getInstalledInstanceList);
 router5.get("/app/:appId", getInstalledInstanceForApp);
@@ -1344,11 +1353,28 @@ router5.post("/app/:appId/type/:installType", createInstalledInstanceByApp);
 router5.put("/:id", updateInstalledInstance);
 router5.delete("/:id", deleteInstalledInstance);
 router5.get("/check-version/:installName", checkVersion);
-var InstalledAIAppRouters_default = router5;
+var InstalledInstanceRouters_default = router5;
+
+// src/self-manage/router/CommonUtilRouters.ts
+var import_express6 = __toESM(require("express"));
+var import_path3 = __toESM(require("path"));
+var router6 = import_express6.default.Router();
+router6.post("/path-join", (req, res) => {
+  const paths = req.body.paths;
+  let resultPath = "";
+  if (paths) {
+    resultPath = import_path3.default.join(...paths);
+  }
+  res.json({
+    resultPath
+  });
+});
+var CommonUtilRouters_default = router6;
 
 // src/self-manage/router/index.ts
 function initRouters2(app2) {
-  app2.use("/api/self-manage/installed-instance", InstalledAIAppRouters_default);
+  app2.use("/api/self-manage/installed-instance", InstalledInstanceRouters_default);
+  app2.use("/api/self-manage/common-util", CommonUtilRouters_default);
 }
 
 // src/self-manage/index.ts
@@ -1379,9 +1405,9 @@ function headers(req, res, next) {
 // src/server.ts
 var http = require("http");
 var logger = (0, import_pino.default)({ name: "server start" });
-var app = (0, import_express6.default)();
+var app = (0, import_express7.default)();
 http.createServer(app);
-app.use(import_express6.default.json());
+app.use(import_express7.default.json());
 app.use(headers);
 initAppStoreModule(app);
 initSelfManageModule(app);
@@ -1398,9 +1424,25 @@ app.use(function(req, res) {
 
 // src/self-manage/websockets/WSServer.ts
 var import_ws = require("ws");
+
+// src/util/ShellExecUtil.ts
+var import_path4 = __toESM(require("path"));
+var ShellExecUtil = class {
+  static getExecPath() {
+    if (SystemCheckUtil.isWindows()) {
+      const globalEnv = ConfigUtil.getGlobalEnv();
+      const bashPath = import_path4.default.join(globalEnv.GIT_INSTALL_PATH, "bin/bash.exe");
+      return bashPath;
+    } else {
+      return "bash";
+    }
+  }
+};
+
+// src/self-manage/websockets/WSServer.ts
 var pty = require("node-pty");
 var os3 = require("os");
-var shell = os3.platform() === "win32" ? "powershell.exe" : "bash";
+var shell = ShellExecUtil.getExecPath();
 var WSServer = class {
   wss;
   expressApp;
