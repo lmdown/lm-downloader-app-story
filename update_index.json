@@ -1,6 +1,6 @@
 {
     "desktop_app": {
-        "min_version": "1.0.0"
+        "min_version": "1.0.1"
     },
     "frontend": {
         "path": "frontend",
@@ -8,7 +8,7 @@
     },
     "server": {
         "depencencies": [
-            "${MODULES_PREFIX}/server_node_modules_${ARCH}.zip"
+            "${MODULES_PREFIX}/server_node_modules_${OS}_${ARCH}.zip"
         ],
         "path": "server"
     },
