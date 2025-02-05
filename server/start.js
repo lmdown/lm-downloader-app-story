@@ -1453,7 +1453,9 @@ var WSServer = class {
     this.setupEventHandlers();
   }
   getFullEnvForApp() {
-    let fullEnv = process.env;
+    let fullEnv = {
+      HOME: process.env.HOME
+    };
     const baseConfig = ConfigUtil.getBaseConfig();
     const globalEnv = ConfigUtil.getGlobalEnv();
     fullEnv = Object.assign(fullEnv, baseConfig);
