@@ -1,0 +1,1 @@
+import{k as s}from"./index.js";const t=async e=>(await s.post(`/self-manage/installed-instance/app/${e.id}`,e)).data,c=async e=>(await s.get(`/self-manage/installed-instance/${e}`)).data,l=async()=>(await s.get("/self-manage/installed-instance")).data,o=async e=>(await s.delete(`/self-manage/installed-instance/${e}`)).data;export{c as a,t as c,o as d,l as g};
