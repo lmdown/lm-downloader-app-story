@@ -1439,6 +1439,65 @@ var ShellExecUtil = class {
   }
 };
 
+// src/util/CopyValueUtil.ts
+var CopyValueUtil = class {
+  static copySomeEnvVars() {
+    const envVars = [
+      "ALLUSERSPROFILE",
+      "APPDATA",
+      "CommonProgramFiles",
+      "CommonProgramFiles(x86)",
+      "CommonProgramW6432",
+      "COMMON_RATE_LIMIT_MAX_REQUESTS",
+      "COMMON_RATE_LIMIT_WINDOW_MS",
+      "COMPUTERNAME",
+      "ComSpec",
+      "HOME",
+      "HOMEDRIVE",
+      "HOMEPATH",
+      "HOST",
+      "NUMBER_OF_PROCESSORS",
+      "OneDrive",
+      "ORIGINAL_XDG_CURRENT_DESKTOP",
+      "OS",
+      "Path",
+      "PROCESSOR_ARCHITECTURE",
+      "PROCESSOR_IDENTIFIER",
+      "PROCESSOR_LEVEL",
+      "PROCESSOR_REVISION",
+      "ProgramData",
+      "ProgramFiles",
+      "ProgramFiles(x86)",
+      "ProgramW6432",
+      "PROMPT",
+      "PSModulePath",
+      "PUBLIC",
+      "SESSIONNAME",
+      "SystemDrive",
+      "SystemRoot",
+      "TEMP",
+      "TERM_PROGRAM",
+      "TERM_PROGRAM_VERSION",
+      "TMP",
+      "USERDOMAIN",
+      "USERDOMAIN_ROAMINGPROFILE",
+      "USERNAME",
+      "USERPROFILE",
+      "windir"
+    ];
+    return this.copySpecificKeys(process.env, envVars);
+  }
+  static copySpecificKeys(source, keysToCopy) {
+    let target = {};
+    keysToCopy.forEach((key) => {
+      if (source.hasOwnProperty(key)) {
+        target[key] = source[key];
+      }
+    });
+    return target;
+  }
+};
+
 // src/self-manage/websockets/WSServer.ts
 var pty = require("node-pty");
 var os3 = require("os");
@@ -1453,9 +1512,15 @@ var WSServer = class {
     this.setupEventHandlers();
   }
   getFullEnvForApp() {
-    let fullEnv = {
-      HOME: process.env.HOME
-    };
+    const processEnv = process.env;
+    let fullEnv = {};
+    if (SystemCheckUtil.isWindows()) {
+      fullEnv = CopyValueUtil.copySomeEnvVars();
+    } else {
+      fullEnv = {
+        HOME: processEnv.HOME
+      };
+    }
     const baseConfig = ConfigUtil.getBaseConfig();
     const globalEnv = ConfigUtil.getGlobalEnv();
     fullEnv = Object.assign(fullEnv, baseConfig);
