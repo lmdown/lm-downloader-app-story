@@ -1109,8 +1109,8 @@ var CheckVersionUtil = class {
   static async checkVersion(appFullFilePath) {
     let appPath = appFullFilePath;
     let version;
-    const fs4 = require("fs");
-    if (!fs4.existsSync(appPath)) {
+    const fs5 = require("fs");
+    if (!fs5.existsSync(appPath)) {
       console.error(`\u9519\u8BEF: \u5E94\u7528\u7A0B\u5E8F ${appPath} \u4E0D\u5B58\u5728.`);
     }
     const platform = os2.platform();
@@ -1357,16 +1357,205 @@ var InstalledInstanceRouters_default = router5;
 
 // src/self-manage/router/CommonUtilRouters.ts
 var import_express6 = __toESM(require("express"));
+var import_path4 = __toESM(require("path"));
+
+// src/util/SystemInfoUtil.ts
+var import_os2 = __toESM(require("os"));
+var import_child_process = require("child_process");
+var SystemInfoUtil = class {
+  static getIPv4Addresses() {
+    const interfaces = import_os2.default.networkInterfaces();
+    const addresses = [];
+    for (const interfaceName in interfaces) {
+      const iface = interfaces[interfaceName];
+      for (const alias of iface) {
+        if (alias.family === "IPv4" && alias.address !== "127.0.0.1") {
+          addresses.push(alias.address);
+        }
+      }
+    }
+    return addresses;
+  }
+  static getSingleLanIP() {
+    const ipv4Addresses = this.getIPv4Addresses();
+    let resultIP = "";
+    console.log("IP Addresses:", ipv4Addresses);
+    if (ipv4Addresses && ipv4Addresses.length > 0) {
+      resultIP = ipv4Addresses[0];
+    }
+    return resultIP;
+  }
+  static getOSEnv(key) {
+    let command = "";
+    if (SystemCheckUtil.isMacOS()) {
+      command = `launchctl getenv ${key}`;
+      try {
+        const stdout = (0, import_child_process.execSync)(command);
+        let result = stdout.toString();
+        if (result) {
+          result = result.trim();
+        }
+        console.log("got env", key, result);
+        return result;
+      } catch (error) {
+        console.error("getOSEnv err", error);
+        return "";
+      }
+    }
+  }
+  static setOSEnv(key, value) {
+    let command = "";
+    if (SystemCheckUtil.isMacOS()) {
+      if (value === "") {
+        value = '""';
+      }
+      command = `launchctl setenv ${key} ${value}`;
+      console.log("command", command);
+      try {
+        const stdout = (0, import_child_process.execSync)(command);
+        const result = stdout.toString();
+        console.log("set env", key, result);
+        return result;
+      } catch (error) {
+        console.error("setOSEnv err", error);
+        throw error;
+      }
+    }
+  }
+};
+
+// src/util/FileInfoUtil.ts
+var import_fs4 = __toESM(require("fs"));
 var import_path3 = __toESM(require("path"));
+var FileInfoUtil = class {
+  static getDirSize(dirPath) {
+    let totalSize = 0;
+    if (!import_fs4.default.existsSync(dirPath)) {
+      console.error("dir dose not exist.", dirPath);
+      return totalSize;
+    }
+    const files = import_fs4.default.readdirSync(dirPath);
+    files.forEach((file) => {
+      const filePath = import_path3.default.join(dirPath, file);
+      const stats = import_fs4.default.statSync(filePath);
+      if (stats.isDirectory()) {
+        totalSize += this.getDirSize(filePath);
+      } else {
+        totalSize += stats.size;
+      }
+    });
+    return totalSize;
+  }
+};
+
+// src/util/app-running/AppModelsUtil.ts
+var { execSync: execSync2 } = require("child_process");
+var AppModelsUtil = class {
+  static getAllModels(appInstallName) {
+    if (appInstallName === "ollama") {
+      return this.getOllamaAllModels();
+    }
+    return [];
+  }
+  static getOllamaAllModels() {
+    const command = `ollama list`;
+    let output = "";
+    try {
+      const stdout = execSync2(command);
+      console.log("got model list: ", stdout.toString());
+      output = stdout.toString();
+    } catch (error) {
+      console.error("run ollama list error", error);
+      return [];
+    }
+    const lines = output.split("\n");
+    const dataArray = [];
+    const findColumnPosition = (headerLine2, columnName) => {
+      const index = headerLine2.indexOf(columnName);
+      if (index === -1) {
+        throw new Error(`Column '${columnName}' not found in header.`);
+      }
+      let end = headerLine2.length;
+      for (let i = index + columnName.length; i < headerLine2.length; i++) {
+        if (headerLine2[i] !== " ") {
+          end = i;
+          break;
+        }
+      }
+      return { start: index, end };
+    };
+    const headerLine = lines[0];
+    const nameColumnPosition = findColumnPosition(headerLine, "NAME");
+    const sizeColumnPosition = findColumnPosition(headerLine, "SIZE");
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      const nameValue = line.substring(nameColumnPosition.start, nameColumnPosition.end).trim();
+      const sizeValue = line.substring(sizeColumnPosition.start, sizeColumnPosition.end).trim();
+      if (nameValue) {
+        dataArray.push({ name: nameValue, size: sizeValue });
+      }
+    }
+    return dataArray;
+  }
+};
+
+// src/self-manage/router/CommonUtilRouters.ts
 var router6 = import_express6.default.Router();
 router6.post("/path-join", (req, res) => {
   const paths = req.body.paths;
   let resultPath = "";
   if (paths) {
-    resultPath = import_path3.default.join(...paths);
+    resultPath = import_path4.default.join(...paths);
   }
   res.json({
     resultPath
+  });
+});
+router6.get("/lan-ip", (req, res) => {
+  let lanIPs = SystemInfoUtil.getIPv4Addresses();
+  res.json({
+    ip: lanIPs
+  });
+});
+router6.get("/user-home-dir", (req, res) => {
+  const userHomeDir = process.env.HOME;
+  res.json({
+    userHomeDir
+  });
+});
+router6.get("/installed-model-files/:appInstallName", (req, res) => {
+  const appInstallName = req.params.appInstallName;
+  const models = AppModelsUtil.getAllModels(appInstallName);
+  res.json({
+    models
+  });
+});
+router6.get("/dir-file-size", (req, res) => {
+  const dirPath = String(req.query.dirPath);
+  const fileSize = FileInfoUtil.getDirSize(dirPath);
+  res.json({
+    dirPath,
+    fileSize
+  });
+});
+router6.post("/app-running-base-env-info", (req, res) => {
+  const keys = req.body.keys;
+  const resultObj = {};
+  keys.forEach((key) => {
+    resultObj[key] = SystemInfoUtil.getOSEnv(key);
+  });
+  res.json(resultObj);
+});
+router6.post("/save-app-running-base-env-info", (req, res) => {
+  const envObj = req.body.envObj;
+  console.log("save env ", envObj);
+  for (const key in envObj) {
+    const value = envObj[key];
+    console.log("save key value", key, value);
+    SystemInfoUtil.setOSEnv(key, value);
+  }
+  res.json({
+    msg: "env saved"
   });
 });
 var CommonUtilRouters_default = router6;
@@ -1426,12 +1615,12 @@ app.use(function(req, res) {
 var import_ws = require("ws");
 
 // src/util/ShellExecUtil.ts
-var import_path4 = __toESM(require("path"));
+var import_path5 = __toESM(require("path"));
 var ShellExecUtil = class {
   static getExecPath() {
     if (SystemCheckUtil.isWindows()) {
       const globalEnv = ConfigUtil.getGlobalEnv();
-      const bashPath = import_path4.default.join(globalEnv.GIT_INSTALL_PATH, "bin/bash.exe");
+      const bashPath = import_path5.default.join(globalEnv.GIT_INSTALL_PATH, "bin/bash.exe");
       return bashPath;
     } else {
       return "bash";
@@ -1441,7 +1630,7 @@ var ShellExecUtil = class {
 
 // src/util/CopyValueUtil.ts
 var CopyValueUtil = class {
-  static copySomeEnvVars() {
+  static copySomeEnvVarsWindows() {
     const envVars = [
       "ALLUSERSPROFILE",
       "APPDATA",
@@ -1487,6 +1676,16 @@ var CopyValueUtil = class {
     ];
     return this.copySpecificKeys(process.env, envVars);
   }
+  static copyOllamaEnvVars() {
+    const allEnv = process.env;
+    const envVars = [];
+    for (const envKey in allEnv) {
+      if (envKey.startsWith("OLLAMA")) {
+        envVars.push(envKey);
+      }
+    }
+    return this.copySpecificKeys(process.env, envVars);
+  }
   static copySpecificKeys(source, keysToCopy) {
     let target = {};
     keysToCopy.forEach((key) => {
@@ -1500,7 +1699,7 @@ var CopyValueUtil = class {
 
 // src/self-manage/websockets/WSServer.ts
 var pty = require("node-pty");
-var os3 = require("os");
+var os4 = require("os");
 var shell = ShellExecUtil.getExecPath();
 var WSServer = class {
   wss;
@@ -1515,12 +1714,13 @@ var WSServer = class {
     const processEnv = process.env;
     let fullEnv = {};
     if (SystemCheckUtil.isWindows()) {
-      fullEnv = CopyValueUtil.copySomeEnvVars();
+      fullEnv = CopyValueUtil.copySomeEnvVarsWindows();
     } else {
       fullEnv = {
         HOME: processEnv.HOME
       };
     }
+    fullEnv = Object.assign(fullEnv, CopyValueUtil.copyOllamaEnvVars());
     const baseConfig = ConfigUtil.getBaseConfig();
     const globalEnv = ConfigUtil.getGlobalEnv();
     fullEnv = Object.assign(fullEnv, baseConfig);
