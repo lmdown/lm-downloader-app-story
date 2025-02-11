@@ -1087,7 +1087,6 @@ var CheckVersionUtil = class {
       fileName = envData._MAC_INSTALL_TARGET_FILE_NAME || envData._MAC_INSTALLER_FILE_NAME;
     } else if (SystemCheckUtil.isWindows()) {
       appInstallPath = envData._WINDOWS_INSTALL_PATH;
-      fileName = envData._WINDOWS_INSTALL_TARGET_FILE_NAME || envData._WINDOWS_INSTALLER_FILE_NAME;
     }
     if (fileName) {
       appFullPath = import_path2.default.join(appInstallPath, fileName);
@@ -1361,7 +1360,31 @@ var import_path4 = __toESM(require("path"));
 
 // src/util/SystemInfoUtil.ts
 var import_os2 = __toESM(require("os"));
+var import_child_process2 = require("child_process");
+
+// src/util/SystemCommandUtil.ts
 var import_child_process = require("child_process");
+var SystemCommandUtil = class {
+  static runCommand(command) {
+    if (command) {
+      try {
+        const stdout = (0, import_child_process.execSync)(command);
+        let result = stdout.toString();
+        if (result) {
+          result = result.trim();
+        }
+        console.log("runCommand -- cmd:", command);
+        console.log("runCommand -- result", result);
+        return result;
+      } catch (error) {
+        console.error("runCommand err", error);
+        return "";
+      }
+    }
+  }
+};
+
+// src/util/SystemInfoUtil.ts
 var SystemInfoUtil = class {
   static getIPv4Addresses() {
     const interfaces = import_os2.default.networkInterfaces();
@@ -1389,32 +1412,30 @@ var SystemInfoUtil = class {
     let command = "";
     if (SystemCheckUtil.isMacOS()) {
       command = `launchctl getenv ${key}`;
-      try {
-        const stdout = (0, import_child_process.execSync)(command);
-        let result = stdout.toString();
-        if (result) {
-          result = result.trim();
-        }
-        console.log("got env", key, result);
-        return result;
-      } catch (error) {
-        console.error("getOSEnv err", error);
-        return "";
-      }
+    } else if (SystemCheckUtil.isWindows()) {
+      return process.env[key];
+    }
+    if (command) {
+      return SystemCommandUtil.runCommand(command);
     }
   }
   static setOSEnv(key, value) {
     let command = "";
+    if (value === "") {
+      value = '""';
+    }
     if (SystemCheckUtil.isMacOS()) {
-      if (value === "") {
-        value = '""';
-      }
       command = `launchctl setenv ${key} ${value}`;
-      console.log("command", command);
+    } else if (SystemCheckUtil.isWindows()) {
+      command = `setx ${key} ${value}`;
+    }
+    console.log("setOSEnv command", command);
+    if (command) {
       try {
-        const stdout = (0, import_child_process.execSync)(command);
+        const stdout = (0, import_child_process2.execSync)(command);
         const result = stdout.toString();
         console.log("set env", key, result);
+        process.env[key] = value;
         return result;
       } catch (error) {
         console.error("setOSEnv err", error);
@@ -1449,7 +1470,7 @@ var FileInfoUtil = class {
 };
 
 // src/util/app-running/AppModelsUtil.ts
-var { execSync: execSync2 } = require("child_process");
+var { execSync: execSync3 } = require("child_process");
 var AppModelsUtil = class {
   static getAllModels(appInstallName) {
     if (appInstallName === "ollama") {
@@ -1461,7 +1482,7 @@ var AppModelsUtil = class {
     const command = `ollama list`;
     let output = "";
     try {
-      const stdout = execSync2(command);
+      const stdout = execSync3(command);
       console.log("got model list: ", stdout.toString());
       output = stdout.toString();
     } catch (error) {
