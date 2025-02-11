@@ -626,6 +626,15 @@ var AIAppInfoService = class {
       console.error(err);
     }
   }
+  fillSnapshots(aiApp) {
+    try {
+      if (aiApp.snapshots && typeof aiApp.snapshots === "string") {
+        aiApp.snapshots = aiApp.snapshots.split(",");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
   fillDescData(aiAppDTO, descItem) {
     if (descItem) {
       aiAppDTO.name = descItem.name;
@@ -679,6 +688,7 @@ var AIAppInfoService = class {
     this.fillDownloadInfo(aiAppInfoDTO);
     this.fillLicenseInfo(aiAppInfoDTO);
     this.fillRefLinks(aiAppInfoDTO);
+    this.fillSnapshots(aiAppInfoDTO);
     return aiAppInfoDTO;
   }
   async getAIAppIcon(appId) {

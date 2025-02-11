@@ -1,1 +1,1 @@
-import{R as a}from"./index.js";a();
+import{W as a}from"./index.js";a();
