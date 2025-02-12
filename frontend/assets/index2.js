@@ -1,1 +1,1 @@
-import{W as a}from"./index.js";a();
+import{T as a}from"./index.js";a();
