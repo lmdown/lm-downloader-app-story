@@ -1531,6 +1531,7 @@ var AppModelsUtil = class {
 };
 
 // src/self-manage/router/CommonUtilRouters.ts
+var import_os3 = __toESM(require("os"));
 var router6 = import_express6.default.Router();
 router6.post("/path-join", (req, res) => {
   const paths = req.body.paths;
@@ -1549,7 +1550,7 @@ router6.get("/lan-ip", (req, res) => {
   });
 });
 router6.get("/user-home-dir", (req, res) => {
-  const userHomeDir = process.env.HOME;
+  const userHomeDir = import_os3.default.homedir();
   res.json({
     userHomeDir
   });
@@ -1573,7 +1574,7 @@ router6.post("/app-running-base-env-info", (req, res) => {
   const keys = req.body.keys;
   const resultObj = {};
   keys.forEach((key) => {
-    resultObj[key] = SystemInfoUtil.getOSEnv(key);
+    resultObj[key] = SystemInfoUtil.getOSEnv(key) || "";
   });
   res.json(resultObj);
 });
@@ -1730,7 +1731,7 @@ var CopyValueUtil = class {
 
 // src/self-manage/websockets/WSServer.ts
 var pty = require("node-pty");
-var os4 = require("os");
+var os5 = require("os");
 var shell = ShellExecUtil.getExecPath();
 var WSServer = class {
   wss;
@@ -1748,7 +1749,8 @@ var WSServer = class {
       fullEnv = CopyValueUtil.copySomeEnvVarsWindows();
     } else {
       fullEnv = {
-        HOME: processEnv.HOME
+        HOME: processEnv.HOME,
+        PATH: processEnv.PATH
       };
     }
     fullEnv = Object.assign(fullEnv, CopyValueUtil.copyOllamaEnvVars());
