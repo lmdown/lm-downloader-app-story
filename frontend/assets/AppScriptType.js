@@ -1,1 +1,1 @@
-const p={INSTALL:"install"};export{p as A};
+const t={INSTALL:"install",START:"start",UPDATE:"update",DELETE:"delete"};export{t as A};

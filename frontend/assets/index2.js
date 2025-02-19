@@ -1,1 +1,1 @@
-import{T as a}from"./index.js";a();
+import{c as i}from"./pinia.js";import"./index.js";i();
