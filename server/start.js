@@ -1104,8 +1104,8 @@ var AppScriptRepoUtil = class {
 };
 
 // src/util/CheckDesktopAppUtil.ts
-var { exec } = require("child_process");
-var os2 = require("os");
+var import_child_process = require("child_process");
+var import_os2 = __toESM(require("os"));
 var CheckVersionUtil = class {
   // the Dir name of App Install Script Repository
   static async getLMDAppScriptRepoDir(appId) {
@@ -1165,18 +1165,21 @@ var CheckVersionUtil = class {
     return realVersionInfo;
   }
   static async checkVersionByProjFiles(appInstallPath, appFullPath, versionDetectType) {
+    let version;
     if (versionDetectType === "node.js") {
       try {
         const packageJsonPath = import_path2.default.resolve(appInstallPath, "package.json");
         const data = import_fs3.default.readFileSync(packageJsonPath, "utf8");
         const packageJson = JSON.parse(data);
         console.log(`Project version: ${packageJson.version}`);
-        return packageJson.version;
+        version = packageJson.version;
       } catch (err) {
         console.error("Error reading or parsing package.json:", err);
       }
+    } else if (versionDetectType === "python") {
+      version = this.getPythonProjectVersion(import_path2.default.resolve(appInstallPath, "pyproject.toml"));
     }
-    return "--";
+    return version;
   }
   static async checkVersion(appFullFilePath) {
     let appPath = appFullFilePath;
@@ -1185,15 +1188,15 @@ var CheckVersionUtil = class {
     if (!fs5.existsSync(appPath)) {
       console.error(`\u9519\u8BEF: \u5E94\u7528\u7A0B\u5E8F ${appPath} \u4E0D\u5B58\u5728.`);
     }
-    const platform = os2.platform();
+    const platform = import_os2.default.platform();
     return new Promise((resolve2, reject) => {
       if (platform === "darwin") {
         const defaultsCommand = `defaults read "${appPath}/Contents/Info" CFBundleShortVersionString`;
-        exec(defaultsCommand, (error, stdout, stderr) => {
+        (0, import_child_process.exec)(defaultsCommand, (error, stdout, stderr) => {
           if (error) {
             console.error(`Check Ver Error: ${stderr}`);
             const mdlsCommand = `mdls -raw -name kMDItemVersion "${appPath}"`;
-            exec(mdlsCommand, (mdlsError, mdlsStdout, mdlsStderr) => {
+            (0, import_child_process.exec)(mdlsCommand, (mdlsError, mdlsStdout, mdlsStderr) => {
               if (mdlsError) {
                 reject(`Check Ver Error ${appPath} ${mdlsStderr}`);
               } else if (mdlsStdout.trim()) {
@@ -1213,7 +1216,7 @@ var CheckVersionUtil = class {
         });
       } else if (platform === "win32") {
         const powershellCommand = `Get-ItemProperty -Path Registry::"HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*" | Where-Object {$_.DisplayName -like "*YourAppName*"} | Select-Object DisplayName, DisplayVersion`;
-        exec(`powershell -NoProfile -ExecutionPolicy Bypass -Command "${powershellCommand}"`, (error, stdout, stderr) => {
+        (0, import_child_process.exec)(`powershell -NoProfile -ExecutionPolicy Bypass -Command "${powershellCommand}"`, (error, stdout, stderr) => {
           if (error) {
             reject(`Check Ver Error: ${stderr} ${error}`);
             return;
@@ -1225,7 +1228,7 @@ var CheckVersionUtil = class {
           }
         });
       } else {
-        exec(`${appPath} --version`, (error, stdout, stderr) => {
+        (0, import_child_process.exec)(`${appPath} --version`, (error, stdout, stderr) => {
           if (error) {
             console.error(`Check Ver Error: ${stderr}`);
             return;
@@ -1238,6 +1241,18 @@ var CheckVersionUtil = class {
         });
       }
     });
+  }
+  static getPythonProjectVersion(filePath) {
+    try {
+      const content = import_fs3.default.readFileSync(filePath, "utf-8");
+      const versionMatch = content.match(/version\s*=\s*(["']?)([^"'\s]+)\1/);
+      if (versionMatch && versionMatch[2]) {
+        return versionMatch[2];
+      }
+    } catch (err) {
+      console.log("getPythonProjectVersion err ", err);
+    }
+    return null;
   }
 };
 
@@ -1436,16 +1451,16 @@ var import_express6 = __toESM(require("express"));
 var import_path4 = __toESM(require("path"));
 
 // src/util/SystemInfoUtil.ts
-var import_os2 = __toESM(require("os"));
-var import_child_process2 = require("child_process");
+var import_os3 = __toESM(require("os"));
+var import_child_process3 = require("child_process");
 
 // src/util/SystemCommandUtil.ts
-var import_child_process = require("child_process");
+var import_child_process2 = require("child_process");
 var SystemCommandUtil = class {
   static runCommand(command) {
     if (command) {
       try {
-        const stdout = (0, import_child_process.execSync)(command);
+        const stdout = (0, import_child_process2.execSync)(command);
         let result = stdout.toString();
         if (result) {
           result = result.trim();
@@ -1464,7 +1479,7 @@ var SystemCommandUtil = class {
 // src/util/SystemInfoUtil.ts
 var SystemInfoUtil = class {
   static getIPv4Addresses() {
-    const interfaces = import_os2.default.networkInterfaces();
+    const interfaces = import_os3.default.networkInterfaces();
     const addresses = [];
     for (const interfaceName in interfaces) {
       const iface = interfaces[interfaceName];
@@ -1509,7 +1524,7 @@ var SystemInfoUtil = class {
     console.log("setOSEnv command", command);
     if (command) {
       try {
-        const stdout = (0, import_child_process2.execSync)(command);
+        const stdout = (0, import_child_process3.execSync)(command);
         const result = stdout.toString();
         console.log("set env", key, result);
         process.env[key] = value;
@@ -1598,7 +1613,7 @@ var AppModelsUtil = class {
 };
 
 // src/self-manage/router/CommonUtilRouters.ts
-var import_os3 = __toESM(require("os"));
+var import_os4 = __toESM(require("os"));
 var router6 = import_express6.default.Router();
 router6.post("/path-join", (req, res) => {
   const paths = req.body.paths;
@@ -1617,7 +1632,7 @@ router6.get("/lan-ip", (req, res) => {
   });
 });
 router6.get("/user-home-dir", (req, res) => {
-  const userHomeDir = import_os3.default.homedir();
+  const userHomeDir = import_os4.default.homedir();
   res.json({
     userHomeDir
   });
