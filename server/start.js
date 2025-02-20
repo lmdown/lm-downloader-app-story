@@ -691,6 +691,19 @@ var AIAppInfoService = class {
     this.fillSnapshots(aiAppInfoDTO);
     return aiAppInfoDTO;
   }
+  // Only return base info
+  async getAIAppBaseInfoById(id) {
+    const aiApp = await AIApp_default.findOne({ raw: true, where: { id } });
+    if (!aiApp) {
+      return {};
+    }
+    let aiAppInfoDTO;
+    aiAppInfoDTO = Object.assign({}, aiApp);
+    const queryConditions = { where: { appId: id } };
+    const aiAppDesc = await AIAppDesc_default.findOne(queryConditions);
+    this.fillDownloadInfo(aiAppInfoDTO);
+    return aiAppInfoDTO;
+  }
   async getAIAppIcon(appId) {
     const aiApp = await AIApp_default.findOne({
       raw: true,
@@ -1070,13 +1083,45 @@ var ReplaceUtil = class {
   }
 };
 
+// src/util/app-running/AppScriptRepoUtil.ts
+var AppScriptRepoUtil = class {
+  static getLMDScriptRepoUrl(lmAppData) {
+    let repoUrl = "https://gitee.com/lmdown/lmd-install-scripts";
+    if (lmAppData?.downloadInfo && lmAppData?.downloadInfo.length > 0) {
+      const downloadInfo = lmAppData.downloadInfo[0];
+      repoUrl = downloadInfo.scriptGitRepoUrl;
+    }
+    const repoLocalFolderName = this.getLastPathSegment(repoUrl) || "lmd-install-scripts";
+    return {
+      repoUrl,
+      repoLocalFolderName
+    };
+  }
+  static getLastPathSegment(url) {
+    const match = url.match(/[^\/?#]+(?=[/?#]*$)/);
+    return match ? match[0] : null;
+  }
+};
+
 // src/util/CheckDesktopAppUtil.ts
 var { exec } = require("child_process");
 var os2 = require("os");
 var CheckVersionUtil = class {
-  static async checkVersionByName(appInstallName) {
+  // the Dir name of App Install Script Repository
+  static async getLMDAppScriptRepoDir(appId) {
+    const svr = new AIAppInfoService();
+    let appBaseInfo;
+    if (appId) {
+      appBaseInfo = await svr.getAIAppBaseInfoById(appId);
+    }
+    const { repoLocalFolderName } = AppScriptRepoUtil.getLMDScriptRepoUrl(appBaseInfo);
+    return repoLocalFolderName;
+  }
+  static async checkVersionByName(appInstallName, appId = "") {
     const config = ConfigUtil.getBaseConfig();
-    const appScriptPath = import_path2.default.join(config.LMD_SCRIPTS_DIR, "lmd-install-scripts/apps", appInstallName);
+    const appScriptRepoDir = await this.getLMDAppScriptRepoDir(String(appId));
+    console.log("appScriptRepoDir appId appScriptRepoDir ", appId, appScriptRepoDir);
+    const appScriptPath = import_path2.default.join(config.LMD_SCRIPTS_DIR, `${appScriptRepoDir}/apps`, appInstallName);
     const appInstallEnvPath = import_path2.default.join(appScriptPath, "env");
     let envData = {};
     if (import_fs3.default.existsSync(appScriptPath)) {
@@ -1093,6 +1138,7 @@ var CheckVersionUtil = class {
     let appFullPath;
     let fileName;
     if (SystemCheckUtil.isMacOS()) {
+      console.log("envData\u68C0\u67E5\u5B89\u88C5\u76EE\u5F55", envData);
       appInstallPath = envData._MAC_INSTALL_PATH;
       fileName = envData._MAC_INSTALL_TARGET_FILE_NAME || envData._MAC_INSTALLER_FILE_NAME;
     } else if (SystemCheckUtil.isWindows()) {
@@ -1184,6 +1230,10 @@ var InstalledInstanceService = class {
   appInfoSvr = new AIAppInfoService();
   async getInstalledInstanceList() {
     const instances = await InstalledInstance_default.findAll({
+      order: [
+        ["update_time", "DESC"],
+        ["id", "DESC"]
+      ],
       raw: true,
       where: {},
       attributes: { exclude: ["create_time", "update_time"] }
@@ -1260,7 +1310,7 @@ var InstalledInstanceService = class {
     return dto;
   }
   async fillRealVersion(dto, instance) {
-    const realVersionInfo = await CheckVersionUtil.checkVersionByName(instance.installName) || {};
+    const realVersionInfo = await CheckVersionUtil.checkVersionByName(instance.installName, instance.appId) || {};
     dto.version = realVersionInfo.version;
     dto.appFullPath = realVersionInfo.appFullPath;
     dto.appInstallPath = realVersionInfo.appInstallPath;
