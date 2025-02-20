@@ -32,6 +32,24 @@ html[running-window] {
   min-height: 300px;
   /* overflow: auto */
 }
+
+
+.lmd-application a {
+  color: rgba(0, 0, 0, 0.75);
+  text-decoration: none;
+  text-decoration-line: none;
+}
+
+.lmd-application a:hover {
+  color: rgb(var(--v-theme-primary));
+  text-decoration: none;
+}
+
+.lmd-application a:active {
+  color: rgb(var(--v-theme-primary));
+  text-decoration: none;
+}
+
 code {
   /* background-color: #1a1a1a; */
   background-color: #DDD;
