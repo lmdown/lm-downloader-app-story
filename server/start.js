@@ -1120,7 +1120,6 @@ var CheckVersionUtil = class {
   static async checkVersionByName(appInstallName, appId = "") {
     const config = ConfigUtil.getBaseConfig();
     const appScriptRepoDir = await this.getLMDAppScriptRepoDir(String(appId));
-    console.log("appScriptRepoDir appId appScriptRepoDir ", appId, appScriptRepoDir);
     const appScriptPath = import_path2.default.join(config.LMD_SCRIPTS_DIR, `${appScriptRepoDir}/apps`, appInstallName);
     const appInstallEnvPath = import_path2.default.join(appScriptPath, "env");
     let envData = {};
@@ -1138,7 +1137,6 @@ var CheckVersionUtil = class {
     let appFullPath;
     let fileName;
     if (SystemCheckUtil.isMacOS()) {
-      console.log("envData\u68C0\u67E5\u5B89\u88C5\u76EE\u5F55", envData);
       appInstallPath = envData._MAC_INSTALL_PATH;
       fileName = envData._MAC_INSTALL_TARGET_FILE_NAME || envData._MAC_INSTALLER_FILE_NAME;
     } else if (SystemCheckUtil.isWindows()) {
@@ -1147,9 +1145,14 @@ var CheckVersionUtil = class {
     if (fileName) {
       appFullPath = import_path2.default.join(appInstallPath, fileName);
     }
-    if (envData._VERSION_DETECTABLE !== "0" && appFullPath) {
+    if (envData._VERSION_DETECTABLE !== "0" && (appInstallPath || appFullPath)) {
       try {
-        version = await this.checkVersion(appFullPath);
+        const versionDetectType = envData._VERSION_DETECT_TYPE;
+        if (versionDetectType) {
+          version = await this.checkVersionByProjFiles(appInstallPath, appFullPath, versionDetectType);
+        } else {
+          version = await this.checkVersion(appFullPath);
+        }
       } catch (err) {
         console.error(err);
       }
@@ -1160,6 +1163,20 @@ var CheckVersionUtil = class {
       appFullPath
     };
     return realVersionInfo;
+  }
+  static async checkVersionByProjFiles(appInstallPath, appFullPath, versionDetectType) {
+    if (versionDetectType === "node.js") {
+      try {
+        const packageJsonPath = import_path2.default.resolve(appInstallPath, "package.json");
+        const data = import_fs3.default.readFileSync(packageJsonPath, "utf8");
+        const packageJson = JSON.parse(data);
+        console.log(`Project version: ${packageJson.version}`);
+        return packageJson.version;
+      } catch (err) {
+        console.error("Error reading or parsing package.json:", err);
+      }
+    }
+    return "--";
   }
   static async checkVersion(appFullFilePath) {
     let appPath = appFullFilePath;
