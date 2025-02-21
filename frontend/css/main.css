@@ -50,6 +50,20 @@ html[running-window] {
   text-decoration: none;
 }
 
+.running-window-main a {
+  color: rgb(var(--v-theme-primary));
+  text-decoration: none;
+}
+
+.running-window-main a:hover {
+  color: rgb(var(--v-theme-primary));
+  text-decoration: underline;
+}
+
+.running-window-main a:active {
+  color: rgb(var(--v-theme-primary));
+}
+
 code {
   /* background-color: #1a1a1a; */
   background-color: #DDD;
@@ -83,6 +97,11 @@ pre {
 }
 #app .v-btn {
   text-transform: none;
+}
+
+#app .vel-btns-wrapper .btn__close {
+  right: 20px;
+  top: 64px;
 }
 
 .v-btn--active,
