@@ -1561,21 +1561,88 @@ var FileInfoUtil = class {
   }
 };
 
+// src/util/app-running/OllamaAPIUtil.ts
+var http = __toESM(require("http"));
+var OllamaAPIUtil = class {
+  static async getInstalledModels() {
+    const maxRetries = 3;
+    const retryDelay = 500;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      console.log(`try get model list: ${attempt}`);
+      try {
+        return await this.makeRequest();
+      } catch (error) {
+        if (attempt === maxRetries) {
+          console.error("request error, all failed. ", error);
+        }
+        console.warn(`request error: ${error.message}`);
+        await this.delay(retryDelay);
+      }
+    }
+  }
+  static makeRequest() {
+    return new Promise((resolve2, reject) => {
+      const options = {
+        hostname: "127.0.0.1",
+        port: 11434,
+        // path: '/api/models',
+        path: "/api/tags",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      };
+      const req = http.request(options, (res) => {
+        let data = "";
+        res.on("data", (chunk) => {
+          data += chunk;
+        });
+        res.on("end", () => {
+          if (res.statusCode === 200) {
+            try {
+              const responseJson = JSON.parse(data);
+              const models = responseJson.models;
+              console.log("got model list:", responseJson);
+              models.forEach((model, index) => {
+                console.log(`${index + 1}. ${model.name}`);
+              });
+              resolve2(models);
+            } catch (error) {
+              reject(new Error(`parse json error: ${error.message}`));
+            }
+          } else {
+            reject(new Error(`request failed: ${res.statusCode} ${res.statusMessage}`));
+          }
+        });
+      });
+      req.on("error", (error) => {
+        reject(new Error(`req error: ${error.message}`));
+      });
+      req.end();
+    });
+  }
+  static delay(ms) {
+    return new Promise((resolve2) => setTimeout(resolve2, ms));
+  }
+};
+
 // src/util/app-running/AppModelsUtil.ts
 var { execSync: execSync3 } = require("child_process");
 var AppModelsUtil = class {
-  static getAllModels(appInstallName) {
+  static async getAllModels(appInstallName) {
     if (appInstallName === "ollama") {
-      return this.getOllamaAllModels();
+      return await this.getOllamaAllModelsHttpAPI();
     }
     return [];
+  }
+  static async getOllamaAllModelsHttpAPI() {
+    return await OllamaAPIUtil.getInstalledModels();
   }
   static getOllamaAllModels() {
     const command = `ollama list`;
     let output = "";
     try {
       const stdout = execSync3(command);
-      console.log("got model list: ", stdout.toString());
       output = stdout.toString();
     } catch (error) {
       console.error("run ollama list error", error);
@@ -1637,9 +1704,9 @@ router6.get("/user-home-dir", (req, res) => {
     userHomeDir
   });
 });
-router6.get("/installed-model-files/:appInstallName", (req, res) => {
+router6.get("/installed-model-files/:appInstallName", async (req, res) => {
   const appInstallName = req.params.appInstallName;
-  const models = AppModelsUtil.getAllModels(appInstallName);
+  const models = await AppModelsUtil.getAllModels(appInstallName);
   res.json({
     models
   });
@@ -1706,10 +1773,10 @@ function headers(req, res, next) {
 }
 
 // src/server.ts
-var http = require("http");
+var http2 = require("http");
 var logger = (0, import_pino.default)({ name: "server start" });
 var app = (0, import_express7.default)();
-http.createServer(app);
+http2.createServer(app);
 app.use(import_express7.default.json());
 app.use(headers);
 initAppStoreModule(app);
