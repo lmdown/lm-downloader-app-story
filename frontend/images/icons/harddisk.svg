@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="55px" height="32px" viewBox="0 0 55 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>编组 34备份</title>
+    <title>disk</title>
     <defs>
         <linearGradient x1="8.80371966%" y1="50%" x2="62.7727056%" y2="60.736755%" id="linearGradient-1">
             <stop stop-color="#E0E5EB" offset="0%"></stop>
@@ -60,7 +60,7 @@
             <feColorMatrix values="0 0 0 0 0.167606138   0 0 0 0 0.299365942   0 0 0 0 0.207024663  0 0 0 1 0" type="matrix" in="shadowInnerInner1"></feColorMatrix>
         </filter>
     </defs>
-    <g id="2025-大魔当" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g id="2025" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g id="画板备份-2" transform="translate(-519.000000, -506.000000)">
             <g id="编组-33" transform="translate(519.000000, 506.000000)">
                 <g id="矩形">

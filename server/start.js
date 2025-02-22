@@ -1184,8 +1184,8 @@ var CheckVersionUtil = class {
   static async checkVersion(appFullFilePath) {
     let appPath = appFullFilePath;
     let version;
-    const fs5 = require("fs");
-    if (!fs5.existsSync(appPath)) {
+    const fs6 = require("fs");
+    if (!fs6.existsSync(appPath)) {
       console.error(`\u9519\u8BEF: \u5E94\u7528\u7A0B\u5E8F ${appPath} \u4E0D\u5B58\u5728.`);
     }
     const platform = import_os2.default.platform();
@@ -1448,7 +1448,7 @@ var InstalledInstanceRouters_default = router5;
 
 // src/self-manage/router/CommonUtilRouters.ts
 var import_express6 = __toESM(require("express"));
-var import_path4 = __toESM(require("path"));
+var import_path5 = __toESM(require("path"));
 
 // src/util/SystemInfoUtil.ts
 var import_os3 = __toESM(require("os"));
@@ -1602,7 +1602,6 @@ var OllamaAPIUtil = class {
             try {
               const responseJson = JSON.parse(data);
               const models = responseJson.models;
-              console.log("got model list:", responseJson);
               models.forEach((model, index) => {
                 console.log(`${index + 1}. ${model.name}`);
               });
@@ -1681,12 +1680,111 @@ var AppModelsUtil = class {
 
 // src/self-manage/router/CommonUtilRouters.ts
 var import_os4 = __toESM(require("os"));
+
+// src/util/DirInfoUtil.ts
+var import_child_process4 = require("child_process");
+var import_fs5 = __toESM(require("fs"));
+var import_path4 = __toESM(require("path"));
+var DirInfoUtil = class {
+  static getDirInfo(targetDir) {
+    if (!import_fs5.default.existsSync(targetDir)) {
+      console.error("dir dose not exist", targetDir);
+      return null;
+    }
+    const dirStat = import_fs5.default.statSync(targetDir);
+    if (!dirStat.isDirectory()) {
+      console.error("not a dir ", targetDir);
+      return null;
+    }
+    const dirSize = FileInfoUtil.getDirSize(targetDir);
+    const diskInfo = this.getDiskInfo(targetDir, dirStat);
+    const dirInfo = {};
+    dirInfo.dirPath = targetDir;
+    dirInfo.diskName = diskInfo.diskName;
+    dirInfo.dirSize = dirSize;
+    dirInfo.freeSpace = diskInfo.freeSpace;
+    dirInfo.totalSpace = diskInfo.totalSpace;
+    return dirInfo;
+  }
+  static getDiskName(dirStat) {
+    const deviceId = dirStat.dev;
+    const dfOutput = (0, import_child_process4.execSync)("df -k").toString();
+    const lines = dfOutput.split("\n");
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line) {
+        const parts = line.split(/\s+/);
+        const devicePath = parts[0];
+        const mountPoint = parts[8];
+        try {
+          const mountStats = import_fs5.default.statSync(mountPoint);
+          if (mountStats.dev === deviceId) {
+            const cmd = `diskutil info "${devicePath}" | grep "Volume Name" | awk -F': ' '{print $2}'`;
+            console.log(cmd);
+            const diskName = (0, import_child_process4.execSync)(cmd).toString().trim();
+            console.log("diskName", diskName);
+            return diskName;
+          }
+        } catch (error) {
+          console.error(`Error getting stats for ${mountPoint}:`, error.message);
+        }
+      }
+    }
+  }
+  static getDiskInfo(targetDir, dirStat) {
+    let platform = process.platform;
+    let diskInfo = {};
+    if (platform === "darwin") {
+      try {
+        const volumeNameMatch = this.getDiskName(dirStat);
+        const volumeName = volumeNameMatch ? volumeNameMatch.trim() : "Disk";
+        const dfHumanOutput = (0, import_child_process4.execSync)(`df -k "${targetDir}"`).toString();
+        const humanLines = dfHumanOutput.split("\n");
+        const humanDiskLine = humanLines[1];
+        const humanParts = humanDiskLine.trim().split(/\s+/);
+        const totalSpace = Number(humanParts[1]) * 1024;
+        const freeSpace = Number(humanParts[3]) * 1024;
+        diskInfo = {
+          diskName: volumeName,
+          totalSpace,
+          freeSpace
+        };
+      } catch (error) {
+        console.error("check disn info error:", error.message);
+      }
+    } else if (platform === "win32") {
+      try {
+        const driveLetter = import_path4.default.parse(targetDir).root;
+        const wmicOutput = (0, import_child_process4.execSync)(
+          `wmic logicaldisk where "DeviceID='${driveLetter.replace("\\", "")}'" get Size,FreeSpace /value`
+        ).toString();
+        const lines = wmicOutput.split("\n").filter((line) => line.trim() !== "");
+        const sizeLine = lines.find((line) => line.startsWith("Size="));
+        const freeSpaceLine = lines.find((line) => line.startsWith("FreeSpace="));
+        const totalSpaceBytes = parseInt(sizeLine.split("=")[1], 10);
+        const freeSpaceBytes = parseInt(freeSpaceLine.split("=")[1], 10);
+        diskInfo = {
+          diskName: driveLetter,
+          totalSpace: totalSpaceBytes,
+          freeSpace: freeSpaceBytes
+        };
+      } catch (error) {
+        console.error("check disk info err:", error.message);
+      }
+    } else {
+      console.error("dose not support this OS");
+    }
+    return diskInfo;
+  }
+};
+
+// src/self-manage/router/CommonUtilRouters.ts
 var router6 = import_express6.default.Router();
 router6.post("/path-join", (req, res) => {
   const paths = req.body.paths;
   let resultPath = "";
   if (paths) {
-    resultPath = import_path4.default.join(...paths);
+    resultPath = import_path5.default.join(...paths);
   }
   res.json({
     resultPath
@@ -1708,7 +1806,7 @@ router6.get("/installed-model-files/:appInstallName", async (req, res) => {
   const appInstallName = req.params.appInstallName;
   const models = await AppModelsUtil.getAllModels(appInstallName);
   res.json({
-    models
+    models: models || []
   });
 });
 router6.get("/dir-file-size", (req, res) => {
@@ -1718,6 +1816,11 @@ router6.get("/dir-file-size", (req, res) => {
     dirPath,
     fileSize
   });
+});
+router6.get("/dir-and-disk-info", (req, res) => {
+  const dirPath = String(req.query.dirPath);
+  const dirInfo = DirInfoUtil.getDirInfo(dirPath) || {};
+  res.json(dirInfo);
 });
 router6.post("/app-running-base-env-info", (req, res) => {
   const keys = req.body.keys;
@@ -1796,12 +1899,12 @@ app.use(function(req, res) {
 var import_ws = require("ws");
 
 // src/util/ShellExecUtil.ts
-var import_path5 = __toESM(require("path"));
+var import_path6 = __toESM(require("path"));
 var ShellExecUtil = class {
   static getExecPath() {
     if (SystemCheckUtil.isWindows()) {
       const globalEnv = ConfigUtil.getGlobalEnv();
-      const bashPath = import_path5.default.join(globalEnv.GIT_INSTALL_PATH, "bin/bash.exe");
+      const bashPath = import_path6.default.join(globalEnv.GIT_INSTALL_PATH, "bin/bash.exe");
       return bashPath;
     } else {
       return "bash";
