@@ -669,9 +669,18 @@ var AIAppInfoService = class {
     return versionRecord;
   }
   async getAIAppInfo(req) {
-    const id = req.params.id;
+    let id = req.params.id;
+    const installName = req.params.installName;
     const locale = req.query.locale;
-    const aiApp = await AIApp_default.findOne({ raw: true, where: { id } });
+    const queryOptions = {};
+    if (id) {
+      queryOptions.id = id;
+    }
+    if (installName) {
+      queryOptions.installName = installName;
+    }
+    const aiApp = await AIApp_default.findOne({ raw: true, where: queryOptions });
+    id = String(aiApp.id);
     if (!aiApp) {
       return {};
     }
@@ -738,8 +747,16 @@ var getAIAppInfoList = async (req, res) => {
     res.status(500).send("Internal server error");
   }
 };
+var getAIAppInfoByInstallName = async (req, res) => {
+  try {
+    const record = await service.getAIAppInfo(req);
+    res.json(record);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal server error");
+  }
+};
 var getAIAppInfo = async (req, res) => {
-  const lang = req.query.lang;
   try {
     const record = await service.getAIAppInfo(req);
     res.json(record);
@@ -790,6 +807,7 @@ var deleteAIAppInfo = async (req, res) => {
 var router2 = import_express2.default.Router();
 router2.get("/", getAIAppInfoList);
 router2.get("/:id", getAIAppInfo);
+router2.get("/install-name/:installName", getAIAppInfoByInstallName);
 router2.post("/", createAIAppInfo);
 router2.put("/:id", updateAIAppInfo);
 router2.delete("/:id", deleteAIAppInfo);
