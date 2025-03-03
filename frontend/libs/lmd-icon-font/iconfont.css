@@ -25,6 +25,10 @@
   content: "\e6f1";
 }
 
+.icon-programming:before {
+  content: "\e6f1";
+}
+
 .icon-text_writing:before {
   content: "\e6f2";
 }
