@@ -32,6 +32,11 @@ html[running-window] {
   min-height: 300px;
   /* overflow: auto */
 }
+html[lite-layout] {
+  min-width: unset;
+  min-height: unset;
+  overflow: hidden
+}
 
 
 .lmd-application a {
