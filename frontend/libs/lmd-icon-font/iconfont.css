@@ -12,6 +12,22 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.icon-prompt:before {
+  content: "\e701";
+}
+
+.icon-text_writing:before {
+  content: "\e700";
+}
+
+.icon-office:before {
+  content: "\e6fe";
+}
+
+.icon-video_processing:before {
+  content: "\e6ff";
+}
+
 .icon-model_training:before {
   content: "\e6fc";
 }
@@ -29,9 +45,13 @@
   content: "\e6f1";
 }
 
-.icon-text_writing:before {
+/* .icon-programming:before {
+  content: "\e6f1";
+} */
+
+/* .icon-text_writing:before {
   content: "\e6f2";
-}
+} */
 
 .icon-language_translation:before {
   content: "\e6f3";
