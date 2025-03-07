@@ -1901,8 +1901,14 @@ var app = (0, import_express7.default)();
 http2.createServer(app);
 app.use("/api", import_express7.default.json());
 app.use("/api", headers);
-app.use(import_express7.default.static(import_path6.default.join(__dirname, "../frontend/")));
 app.use("/story-assets", import_express7.default.static(import_path6.default.join(__dirname, "../story-assets/")));
+app.use("/", (req, res, next) => {
+  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  next();
+});
+app.use(import_express7.default.static(import_path6.default.join(__dirname, "../frontend/")));
 app.get("/", (req, res) => {
   res.sendFile(import_path6.default.join(__dirname, "../frontend", "index.html"));
 });
@@ -1916,7 +1922,7 @@ app.use(cors({
   origin: "http://localhost"
 }));
 app.use(function(req, res) {
-  res.send("404 not found.");
+  res.send("404 not found");
 });
 
 // src/self-manage/websockets/WSServer.ts
@@ -2109,7 +2115,9 @@ var LMDServer = class {
     const server = app.listen(env.PORT, () => {
       const { NODE_ENV, HOST, PORT } = env;
       logger.info(`Server (${NODE_ENV}) running on port http://${HOST}:${PORT}`);
-      process.send("lmd-server-started");
+      if (process.send) {
+        process.send("lmd-server-started");
+      }
     });
     const wsServer = new WSServer_default(app, server);
     wsServer.start();
