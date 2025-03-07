@@ -1894,12 +1894,18 @@ function headers(req, res, next) {
 }
 
 // src/server.ts
+var import_path6 = __toESM(require("path"));
 var http2 = require("http");
 var logger = (0, import_pino.default)({ name: "server start" });
 var app = (0, import_express7.default)();
 http2.createServer(app);
-app.use(import_express7.default.json());
-app.use(headers);
+app.use("/api", import_express7.default.json());
+app.use("/api", headers);
+app.use(import_express7.default.static(import_path6.default.join(__dirname, "../frontend/")));
+app.use("/story-assets", import_express7.default.static(import_path6.default.join(__dirname, "../story-assets/")));
+app.get("/", (req, res) => {
+  res.sendFile(import_path6.default.join(__dirname, "../frontend", "index.html"));
+});
 initAppStoreModule(app);
 initSelfManageModule(app);
 app.get("/api/health-check", (req, res) => {
@@ -1917,12 +1923,12 @@ app.use(function(req, res) {
 var import_ws = require("ws");
 
 // src/util/ShellExecUtil.ts
-var import_path6 = __toESM(require("path"));
+var import_path7 = __toESM(require("path"));
 var ShellExecUtil = class {
   static getExecPath() {
     if (SystemCheckUtil.isWindows()) {
       const globalEnv = ConfigUtil.getGlobalEnv();
-      const bashPath = import_path6.default.join(globalEnv.GIT_INSTALL_PATH, "bin/bash.exe");
+      const bashPath = import_path7.default.join(globalEnv.GIT_INSTALL_PATH, "bin/bash.exe");
       return bashPath;
     } else {
       return "bash";
@@ -2103,6 +2109,7 @@ var LMDServer = class {
     const server = app.listen(env.PORT, () => {
       const { NODE_ENV, HOST, PORT } = env;
       logger.info(`Server (${NODE_ENV}) running on port http://${HOST}:${PORT}`);
+      process.send("lmd-server-started");
     });
     const wsServer = new WSServer_default(app, server);
     wsServer.start();
