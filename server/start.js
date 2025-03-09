@@ -36,7 +36,7 @@ var env = (0, import_envalid.cleanEnv)(process.env, {
 
 // src/server.ts
 var import_pino = __toESM(require("pino"));
-var import_express7 = __toESM(require("express"));
+var import_express8 = __toESM(require("express"));
 
 // src/app-store/model/AIApp.ts
 var import_sequelize2 = require("sequelize");
@@ -141,6 +141,10 @@ var PathUtil = class {
   }
   static getSelfManageDBPath(fileName) {
     const dbDir = process.env.SELF_MANAGE_DB_DIR || "./db";
+    return this.getDBFilePath(fileName, dbDir);
+  }
+  static getUniversalAppDBPath(fileName) {
+    const dbDir = process.env.UNIVERSAL_APP_DB_DIR || "./db";
     return this.getDBFilePath(fileName, dbDir);
   }
 };
@@ -1895,25 +1899,189 @@ function headers(req, res, next) {
 
 // src/server.ts
 var import_path6 = __toESM(require("path"));
+
+// src/universal-app-store/model/UniversalAIApp.ts
+var import_sequelize10 = require("sequelize");
+
+// src/universal-app-store/db-universal-app-store.ts
+var import_sequelize9 = require("sequelize");
+var dbPath3 = PathUtil.getUniversalAppDBPath("universal-app-store.db");
+var sequelize3 = new import_sequelize9.Sequelize({
+  dialect: "sqlite",
+  storage: dbPath3,
+  logging: true,
+  query: { raw: true }
+});
+var db_universal_app_store_default = sequelize3;
+
+// src/universal-app-store/model/UniversalAIApp.ts
+var UniversalAIApp = class extends import_sequelize10.Model {
+  id;
+  name;
+  alias;
+  // installName
+  icon;
+  desc_zh;
+  desc_en;
+  url;
+  createTime;
+  updateTime;
+};
+UniversalAIApp.init(
+  {
+    id: {
+      type: import_sequelize10.DataTypes.INTEGER.UNSIGNED,
+      autoIncrement: true,
+      primaryKey: true
+    },
+    name: {
+      type: import_sequelize10.DataTypes.STRING,
+      allowNull: false
+    },
+    alias: {
+      type: import_sequelize10.DataTypes.STRING,
+      allowNull: true,
+      unique: false
+    },
+    icon: {
+      type: import_sequelize10.DataTypes.STRING,
+      allowNull: true,
+      unique: false
+    },
+    desc_zh: {
+      type: import_sequelize10.DataTypes.STRING,
+      allowNull: true,
+      unique: false
+    },
+    desc_en: {
+      type: import_sequelize10.DataTypes.STRING,
+      allowNull: true,
+      unique: false
+    },
+    url: {
+      type: import_sequelize10.DataTypes.STRING,
+      allowNull: true,
+      unique: false
+    }
+  },
+  {
+    sequelize: db_universal_app_store_default,
+    tableName: "t_universal_ai_app",
+    timestamps: true,
+    createdAt: "create_time",
+    updatedAt: "update_time",
+    underscored: true
+  }
+);
+var UniversalAIApp_default = UniversalAIApp;
+
+// src/universal-app-store/model/index.ts
+function initModels3() {
+  (async () => {
+    try {
+      await UniversalAIApp_default.sync();
+      console.log("[universal-app-app-store] Database & tables created!");
+    } catch (error) {
+      console.error("Unable to sync the database:", error);
+    }
+  })();
+}
+
+// src/universal-app-store/router/UniversalAIAppRouters.ts
+var import_express7 = __toESM(require("express"));
+
+// src/universal-app-store/controller/aiAppController.ts
+var import_sequelize11 = require("sequelize");
+var searchAIApps = async (req, res) => {
+  const locale = req.query.locale;
+  const keyword = req.query.keyword;
+  try {
+    let query = {};
+    if (locale && locale.startsWith("zh")) {
+      query = {
+        [import_sequelize11.Op.or]: [
+          { name: { [import_sequelize11.Op.like]: `%${keyword}%` } },
+          { desc_zh: { [import_sequelize11.Op.like]: `%${keyword}%` } }
+        ]
+      };
+    } else {
+      query = {
+        [import_sequelize11.Op.or]: [
+          { name: { [import_sequelize11.Op.like]: `%${keyword}%` } },
+          { desc_en: { [import_sequelize11.Op.like]: `%${keyword}%` } }
+        ]
+      };
+    }
+    const records = await UniversalAIApp_default.findAll({ where: query });
+    res.json(records);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal server error");
+  }
+};
+var clearAllApps = async (req, res) => {
+  await UniversalAIApp_default.truncate();
+  db_universal_app_store_default.query('DELETE FROM sqlite_sequence WHERE name="t_universal_ai_app";');
+  res.status(200).json({ message: "success.clear" });
+};
+var initUniversalAIApps = async (req, res) => {
+  const id = req.params.id;
+  const reqData = req.body;
+  try {
+    await UniversalAIApp_default.bulkCreate(
+      reqData
+    );
+    res.status(201).json({ message: "success.created" });
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).json({ error: "errors.database" });
+  }
+};
+
+// src/universal-app-store/router/UniversalAIAppRouters.ts
+var router7 = import_express7.default.Router();
+router7.get("/search", searchAIApps);
+router7.get("/clear", clearAllApps);
+router7.post("/init", initUniversalAIApps);
+var UniversalAIAppRouters_default = router7;
+
+// src/universal-app-store/router/index.ts
+function initRouters3(app2) {
+  app2.use("/api/universal-ai-app", UniversalAIAppRouters_default);
+}
+
+// src/universal-app-store/index.ts
+function initUniversalAppModule(app2) {
+  initModels3();
+  initRouters3(app2);
+}
+
+// src/server.ts
 var http2 = require("http");
 var logger = (0, import_pino.default)({ name: "server start" });
-var app = (0, import_express7.default)();
+var app = (0, import_express8.default)();
 http2.createServer(app);
-app.use("/api", import_express7.default.json());
+app.use(import_express8.default.json({ limit: "100mb" }));
+app.use(import_express8.default.urlencoded({ limit: "100mb", extended: true }));
+app.use("/api", import_express8.default.json());
 app.use("/api", headers);
-app.use("/story-assets", import_express7.default.static(import_path6.default.join(__dirname, "../story-assets/")));
+app.use("/story-assets", import_express8.default.static(import_path6.default.join(__dirname, "../story-assets/")));
+app.use("/libs", import_express8.default.static(import_path6.default.join(__dirname, "../frontend/libs/")));
+app.use("/images", import_express8.default.static(import_path6.default.join(__dirname, "../frontend/images/")));
+app.use("/favicon.ico", import_express8.default.static(import_path6.default.join(__dirname, "../frontend/favicon.ico")));
 app.use("/", (req, res, next) => {
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   res.setHeader("Pragma", "no-cache");
   res.setHeader("Expires", "0");
   next();
 });
-app.use(import_express7.default.static(import_path6.default.join(__dirname, "../frontend/")));
+app.use(import_express8.default.static(import_path6.default.join(__dirname, "../frontend/")));
 app.get("/", (req, res) => {
   res.sendFile(import_path6.default.join(__dirname, "../frontend", "index.html"));
 });
 initAppStoreModule(app);
 initSelfManageModule(app);
+initUniversalAppModule(app);
 app.get("/api/health-check", (req, res) => {
   res.send({ msg: "lmd server ok" });
 });
