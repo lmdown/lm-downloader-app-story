@@ -1995,6 +1995,10 @@ var import_sequelize11 = require("sequelize");
 var searchAIApps = async (req, res) => {
   const locale = req.query.locale;
   const keyword = req.query.keyword;
+  if (!keyword) {
+    res.json([]);
+    return;
+  }
   try {
     let query = {};
     if (locale && locale.startsWith("zh")) {
