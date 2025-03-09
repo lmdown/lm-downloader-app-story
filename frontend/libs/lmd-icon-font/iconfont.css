@@ -24,6 +24,10 @@
   content: "\e6fe";
 }
 
+.icon-business:before {
+  content: "\e6fe";
+}
+
 .icon-video_processing:before {
   content: "\e6ff";
 }
