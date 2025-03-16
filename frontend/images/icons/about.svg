@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="26px" height="26px" viewBox="0 0 26 26" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icon-about</title>
+    <defs>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-1">
+            <stop stop-color="#F4F4FA" offset="0%"></stop>
+            <stop stop-color="#E4E4F3" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="页面-2" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="画板备份-5" transform="translate(-223.000000, -893.000000)">
+            <g id="编组-2" transform="translate(200.000000, 87.000000)">
+                <g id="编组-24备份" transform="translate(24.000000, 767.000000)">
+                    <g id="icon-about" transform="translate(0.000000, 40.000000)">
+                        <circle id="椭圆形" stroke="#6F6F8C" fill="url(#linearGradient-1)" cx="12" cy="12" r="12"></circle>
+                        <g id="i" transform="translate(10.991699, 6.862305)" fill="#6F6F8C" fill-rule="nonzero">
+                            <path d="M1.97558594,2.68652344 L1.97558594,10.1376953 L0,10.1376953 L0,2.68652344 L1.97558594,2.68652344 Z M1.97558594,0 L1.97558594,1.79785156 L0,1.79785156 L0,0 L1.97558594,0 Z" id="形状"></path>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
