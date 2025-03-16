@@ -9,6 +9,8 @@
 - 使用`git clone`获取`lm-downloader-app-story`，再执行`git pull`。
 - 以上完成后启动本地服务，打开首页。
 
+#### 链接
+[首页](https://daiyl.com/)
 
 #### 目录
 - db
