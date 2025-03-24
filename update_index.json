@@ -1,19 +1,19 @@
 {
-    "version": "1742797533",
-    "desktop_app": {
-        "min_version": "1.0.8"
-    },
-    "frontend": {
-        "path": "frontend",
-        "depencencies": []
-    },
-    "server": {
-        "depencencies": [
-            "${MODULES_PREFIX}/server_node_modules_${OS}_${ARCH}.zip"
-        ],
-        "path": "server"
-    },
-    "db": {
-        "app-story": "db/app-store.db"
-    }
+  "version": "1742813151",
+  "desktop_app": {
+    "min_version": "1.0.8"
+  },
+  "frontend": {
+    "path": "frontend",
+    "depencencies": []
+  },
+  "server": {
+    "depencencies": [
+      "${MODULES_PREFIX}/server_node_modules_${OS}_${ARCH}.zip"
+    ],
+    "path": "server"
+  },
+  "db": {
+    "app-story": "db/app-store.db"
+  }
 }
