@@ -36,7 +36,7 @@ var env = (0, import_envalid.cleanEnv)(process.env, {
 
 // src/server.ts
 var import_pino = __toESM(require("pino"));
-var import_express8 = __toESM(require("express"));
+var import_express9 = __toESM(require("express"));
 
 // src/app-store/model/AIApp.ts
 var import_sequelize2 = require("sequelize");
@@ -181,6 +181,7 @@ var AIApp = class extends import_sequelize2.Model {
   accessInfo;
   createTime;
   updateTime;
+  installRequireGit;
 };
 AIApp.init(
   {
@@ -203,6 +204,10 @@ AIApp.init(
       allowNull: true
     },
     runtimeUpdateAllowed: {
+      type: import_sequelize2.DataTypes.BOOLEAN,
+      allowNull: true
+    },
+    installRequireGit: {
       type: import_sequelize2.DataTypes.BOOLEAN,
       allowNull: true
     },
@@ -1405,6 +1410,7 @@ var createInstalledInstanceByApp = async (req, res) => {
       res.status(200).json({
         msg: "install instance exist"
       });
+      return;
     }
     const newRecord = await service4.createInstanceByApp(appDTO, installType);
     res.status(201).json(newRecord);
@@ -2003,6 +2009,7 @@ var searchAIApps = async (req, res) => {
     let query = {};
     if (locale && locale.startsWith("zh")) {
       query = {
+        [import_sequelize11.Op.and]: [{ alias: { [import_sequelize11.Op.eq]: null } }],
         [import_sequelize11.Op.or]: [
           { name: { [import_sequelize11.Op.like]: `%${keyword}%` } },
           { desc_zh: { [import_sequelize11.Op.like]: `%${keyword}%` } }
@@ -2010,6 +2017,7 @@ var searchAIApps = async (req, res) => {
       };
     } else {
       query = {
+        [import_sequelize11.Op.and]: [{ alias: { [import_sequelize11.Op.eq]: null } }],
         [import_sequelize11.Op.or]: [
           { name: { [import_sequelize11.Op.like]: `%${keyword}%` } },
           { desc_en: { [import_sequelize11.Op.like]: `%${keyword}%` } }
@@ -2049,50 +2057,62 @@ router7.get("/clear", clearAllApps);
 router7.post("/init", initUniversalAIApps);
 var UniversalAIAppRouters_default = router7;
 
+// src/universal-app-store/router/AppSearchRouters.ts
+var import_express8 = __toESM(require("express"));
+var router8 = import_express8.default.Router();
+router8.get("/search", searchAIApps);
+var AppSearchRouters_default = router8;
+
 // src/universal-app-store/router/index.ts
-function initRouters3(app2) {
-  app2.use("/api/universal-ai-app", UniversalAIAppRouters_default);
+function initRouters3(app2, onlySearch = false) {
+  if (onlySearch) {
+    app2.use("/api/universal-ai-app", AppSearchRouters_default);
+    return;
+  } else {
+    app2.use("/api/universal-ai-app", UniversalAIAppRouters_default);
+  }
 }
 
 // src/universal-app-store/index.ts
-function initUniversalAppModule(app2) {
+function initUniversalAppModule(app2, onlySearch = false) {
   initModels3();
-  initRouters3(app2);
+  initRouters3(app2, onlySearch);
 }
 
 // src/server.ts
 var http2 = require("http");
 var logger = (0, import_pino.default)({ name: "server start" });
-var app = (0, import_express8.default)();
+var app = (0, import_express9.default)();
 http2.createServer(app);
-app.use(import_express8.default.json({ limit: "100mb" }));
-app.use(import_express8.default.urlencoded({ limit: "100mb", extended: true }));
-app.use("/api", import_express8.default.json());
+app.use(import_express9.default.json({ limit: "100mb" }));
+app.use(import_express9.default.urlencoded({ limit: "100mb", extended: true }));
+app.use("/api", import_express9.default.json());
 app.use("/api", headers);
-app.use("/story-assets", import_express8.default.static(import_path6.default.join(__dirname, "../story-assets/")));
-app.use("/libs", import_express8.default.static(import_path6.default.join(__dirname, "../frontend/libs/")));
-app.use("/images", import_express8.default.static(import_path6.default.join(__dirname, "../frontend/images/")));
-app.use("/favicon.ico", import_express8.default.static(import_path6.default.join(__dirname, "../frontend/favicon.ico")));
+app.use("/story-assets", import_express9.default.static(import_path6.default.join(__dirname, "../story-assets/")));
+app.use("/libs", import_express9.default.static(import_path6.default.join(__dirname, "../frontend/libs/")));
+app.use("/images", import_express9.default.static(import_path6.default.join(__dirname, "../frontend/images/")));
+app.use("/favicon.ico", import_express9.default.static(import_path6.default.join(__dirname, "../frontend/favicon.ico")));
 app.use("/", (req, res, next) => {
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   res.setHeader("Pragma", "no-cache");
   res.setHeader("Expires", "0");
   next();
 });
-app.use(import_express8.default.static(import_path6.default.join(__dirname, "../frontend/")));
+app.use(import_express9.default.static(import_path6.default.join(__dirname, "../frontend/")));
 app.get("/", (req, res) => {
   res.sendFile(import_path6.default.join(__dirname, "../frontend", "index.html"));
 });
+var cors = require("cors");
+app.use(cors({
+  origin: "http://localhost:5173",
+  allowedHeaders: ["Content-Type", "Authorization", "Access-Control-Allow-Headers"]
+}));
 initAppStoreModule(app);
 initSelfManageModule(app);
 initUniversalAppModule(app);
 app.get("/api/health-check", (req, res) => {
   res.send({ msg: "lmd server ok" });
 });
-var cors = require("cors");
-app.use(cors({
-  origin: "http://localhost"
-}));
 app.use(function(req, res) {
   res.send("404 not found");
 });
