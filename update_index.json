@@ -15,5 +15,12 @@
   },
   "db": {
     "app-story": "db/app-store.db"
+  },
+  "ai_apps": {
+    "depencencies": {
+      "sevenz_url": "https://www.7-zip.org/a/7zr.exe",
+      "git_file_name": "PortableGit-2.47.1.2-64-bit.7z.exe",
+      "git_file_url": "https://github.com/git-for-windows/git/releases/download/v2.47.1.windows.2/"
+    }
   }
 }
