@@ -22,7 +22,7 @@
   },
   "ai_apps": {
     "depencencies": {
-      "sevenz_url": "https://www.7-zip.org/a/7zr.exe",
+      "sevenz_url": "https://d-1314735556.cos.ap-shanghai.myqcloud.com/pkgs/tools/7zr.exe",
       "git_file_name": "PortableGit-2.47.1.2-64-bit.7z.exe",
       "git_file_prefix": "https://github.com/git-for-windows/git/releases/download/v2.47.1.windows.2/"
     }
