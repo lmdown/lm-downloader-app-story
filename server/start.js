@@ -35,7 +35,6 @@ var env = (0, import_envalid.cleanEnv)(process.env, {
 });
 
 // src/server.ts
-var import_pino = __toESM(require("pino"));
 var import_express9 = __toESM(require("express"));
 
 // src/app-store/model/AIApp.ts
@@ -445,10 +444,10 @@ var AppStory_default = AppStory;
 function initModels() {
   (async () => {
     try {
-      await AIApp_default.sync();
-      await AIAppVersion_default.sync();
-      await AIAppDesc_default.sync();
-      await AppStory_default.sync();
+      await AIApp_default.sync({ logging: false });
+      await AIAppVersion_default.sync({ logging: false });
+      await AIAppDesc_default.sync({ logging: false });
+      await AppStory_default.sync({ logging: false });
       console.log("[app-store] Database & tables created!");
     } catch (error) {
       console.error("Unable to sync the database:", error);
@@ -1057,8 +1056,8 @@ var InstalledInstance_default = InstalledInstance;
 function initModels2() {
   (async () => {
     try {
-      await FileStorageInfo_default.sync();
-      await InstalledInstance_default.sync();
+      await FileStorageInfo_default.sync({ logging: false });
+      await InstalledInstance_default.sync({ logging: false });
       console.log("[self-manage] Database & tables created!");
     } catch (error) {
       console.error("Unable to sync the database:", error);
@@ -1211,8 +1210,8 @@ var CheckVersionUtil = class {
   static async checkVersion(appFullFilePath) {
     let appPath = appFullFilePath;
     let version;
-    const fs6 = require("fs");
-    if (!fs6.existsSync(appPath)) {
+    const fs7 = require("fs");
+    if (!fs7.existsSync(appPath)) {
       console.error(`\u9519\u8BEF: \u5E94\u7528\u7A0B\u5E8F ${appPath} \u4E0D\u5B58\u5728.`);
     }
     const platform = import_os2.default.platform();
@@ -1904,7 +1903,7 @@ function headers(req, res, next) {
 }
 
 // src/server.ts
-var import_path6 = __toESM(require("path"));
+var import_path7 = __toESM(require("path"));
 
 // src/universal-app-store/model/UniversalAIApp.ts
 var import_sequelize10 = require("sequelize");
@@ -1985,7 +1984,7 @@ var UniversalAIApp_default = UniversalAIApp;
 function initModels3() {
   (async () => {
     try {
-      await UniversalAIApp_default.sync();
+      await UniversalAIApp_default.sync({ logging: false });
       console.log("[universal-app-app-store] Database & tables created!");
     } catch (error) {
       console.error("Unable to sync the database:", error);
@@ -2079,28 +2078,69 @@ function initUniversalAppModule(app2, onlySearch = false) {
   initRouters3(app2, onlySearch);
 }
 
+// src/LogInit.ts
+var import_fs6 = __toESM(require("fs"));
+var import_path6 = __toESM(require("path"));
+var import_pino = __toESM(require("pino"));
+function initLog() {
+  const baseConfig = ConfigUtil.getBaseConfig();
+  const lmdDataRoot = baseConfig.LMD_DATA_ROOT || process.cwd();
+  const logsPath = import_path6.default.resolve(lmdDataRoot, "logs");
+  console.log("logsPath", logsPath);
+  if (!import_fs6.default.existsSync(logsPath)) {
+    import_fs6.default.mkdirSync(logsPath);
+  }
+  const logFilePath = import_path6.default.resolve(logsPath, "lmd-server.log");
+  if (import_fs6.default.existsSync(logFilePath)) {
+    import_fs6.default.rmSync(logFilePath);
+  }
+  const logger2 = (0, import_pino.default)(
+    {
+      name: "lmd-server",
+      level: "info"
+    },
+    import_pino.default.destination(logFilePath)
+  );
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+  const originalConsoleWarn = console.warn;
+  console.log = (...args) => {
+    logger2.info(args.join(" "));
+    originalConsoleLog.apply(console, args);
+  };
+  console.warn = (...args) => {
+    logger2.warn(args.join(" "));
+    originalConsoleWarn.apply(console, args);
+  };
+  console.error = (...args) => {
+    logger2.error(args.join(" "));
+    originalConsoleError.apply(console, args);
+  };
+  return logger2;
+}
+
 // src/server.ts
 var http2 = require("http");
-var logger = (0, import_pino.default)({ name: "server start" });
+var logger = initLog();
 var app = (0, import_express9.default)();
 http2.createServer(app);
 app.use(import_express9.default.json({ limit: "100mb" }));
 app.use(import_express9.default.urlencoded({ limit: "100mb", extended: true }));
 app.use("/api", import_express9.default.json());
 app.use("/api", headers);
-app.use("/story-assets", import_express9.default.static(import_path6.default.join(__dirname, "../story-assets/")));
-app.use("/libs", import_express9.default.static(import_path6.default.join(__dirname, "../frontend/libs/")));
-app.use("/images", import_express9.default.static(import_path6.default.join(__dirname, "../frontend/images/")));
-app.use("/favicon.ico", import_express9.default.static(import_path6.default.join(__dirname, "../frontend/favicon.ico")));
+app.use("/story-assets", import_express9.default.static(import_path7.default.join(__dirname, "../story-assets/")));
+app.use("/libs", import_express9.default.static(import_path7.default.join(__dirname, "../frontend/libs/")));
+app.use("/images", import_express9.default.static(import_path7.default.join(__dirname, "../frontend/images/")));
+app.use("/favicon.ico", import_express9.default.static(import_path7.default.join(__dirname, "../frontend/favicon.ico")));
 app.use("/", (req, res, next) => {
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   res.setHeader("Pragma", "no-cache");
   res.setHeader("Expires", "0");
   next();
 });
-app.use(import_express9.default.static(import_path6.default.join(__dirname, "../frontend/")));
+app.use(import_express9.default.static(import_path7.default.join(__dirname, "../frontend/")));
 app.get("/", (req, res) => {
-  res.sendFile(import_path6.default.join(__dirname, "../frontend", "index.html"));
+  res.sendFile(import_path7.default.join(__dirname, "../frontend", "index.html"));
 });
 var cors = require("cors");
 app.use(cors({
@@ -2121,12 +2161,12 @@ app.use(function(req, res) {
 var import_ws = require("ws");
 
 // src/util/ShellExecUtil.ts
-var import_path7 = __toESM(require("path"));
+var import_path8 = __toESM(require("path"));
 var ShellExecUtil = class {
   static getExecPath() {
     if (SystemCheckUtil.isWindows()) {
       const globalEnv = ConfigUtil.getGlobalEnv();
-      const bashPath = import_path7.default.join(globalEnv.GIT_INSTALL_PATH, "bin/bash.exe");
+      const bashPath = import_path8.default.join(globalEnv.GIT_INSTALL_PATH, "bin/bash.exe");
       return bashPath;
     } else {
       return "bash";

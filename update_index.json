@@ -1,5 +1,5 @@
 {
-  "version": "1742813151",
+  "version": "1742952798",
   "desktop_app": {
     "min_version": "1.0.8"
   },
@@ -9,9 +9,7 @@
   },
   "frontend": {
     "path": "frontend",
-    "depencencies": [
-      "${MODULES_PREFIX}/frontend_node_modules_${OS}_${ARCH}.zip"
-    ]
+    "depencencies": []
   },
   "server": {
     "depencencies": [
