@@ -2,13 +2,12 @@
   font-family: Helvetica, Inter, system-ui, Avenir, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
+  /* color-scheme: light dark; */
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* background-color: #242424; */
 
   font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  /* text-rendering: optimizeLegibility; */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
@@ -37,7 +36,6 @@ html[lite-layout] {
   min-height: unset;
   overflow: hidden
 }
-
 
 .lmd-application a {
   color: rgba(0, 0, 0, 0.75);
