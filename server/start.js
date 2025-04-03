@@ -155,7 +155,7 @@ console.log("dbPath", dbPath);
 var sequelize = new import_sequelize.Sequelize({
   dialect: "sqlite",
   storage: dbPath,
-  logging: true,
+  logging: false,
   query: { raw: true }
 });
 var db_app_store_default = sequelize;
@@ -917,7 +917,7 @@ var dbPath2 = PathUtil.getSelfManageDBPath("self-manage.db");
 var sequelize2 = new import_sequelize6.Sequelize({
   dialect: "sqlite",
   storage: dbPath2,
-  logging: true,
+  logging: false,
   query: { raw: true }
 });
 var db_self_manage_default = sequelize2;
@@ -1914,7 +1914,7 @@ var dbPath3 = PathUtil.getUniversalAppDBPath("universal-app-store.db");
 var sequelize3 = new import_sequelize9.Sequelize({
   dialect: "sqlite",
   storage: dbPath3,
-  logging: true,
+  logging: false,
   query: { raw: true }
 });
 var db_universal_app_store_default = sequelize3;
@@ -1997,6 +1997,21 @@ var import_express7 = __toESM(require("express"));
 
 // src/universal-app-store/controller/aiAppController.ts
 var import_sequelize11 = require("sequelize");
+
+// src/util/TimeFormatUtil.ts
+var TimeFormatUtil = class {
+  static formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  }
+};
+
+// src/universal-app-store/controller/aiAppController.ts
 var searchAIApps = async (req, res) => {
   const locale = req.query.locale;
   const keyword = req.query.keyword;
@@ -2035,13 +2050,26 @@ var clearAllApps = async (req, res) => {
   db_universal_app_store_default.query('DELETE FROM sqlite_sequence WHERE name="t_universal_ai_app";');
   res.status(200).json({ message: "success.clear" });
 };
-var initUniversalAIApps = async (req, res) => {
+var initUniversalAIAppsSQL = async (req, res) => {
   const id = req.params.id;
   const reqData = req.body;
   try {
-    await UniversalAIApp_default.bulkCreate(
-      reqData
-    );
+    const tableName = "t_universal_ai_app";
+    const query = `INSERT INTO ${tableName} (desc_en, desc_zh, icon, name, url, create_time, update_time) VALUES ?`;
+    const now = TimeFormatUtil.formatDate(/* @__PURE__ */ new Date());
+    const values = reqData.map((item) => [
+      item.desc_en,
+      item.desc_zh,
+      item.icon,
+      item.name,
+      item.url,
+      now,
+      now
+    ]);
+    await db_universal_app_store_default.query(query, {
+      replacements: [values],
+      type: import_sequelize11.QueryTypes.INSERT
+    });
     res.status(201).json({ message: "success.created" });
   } catch (error) {
     console.log("error", error);
@@ -2053,7 +2081,7 @@ var initUniversalAIApps = async (req, res) => {
 var router7 = import_express7.default.Router();
 router7.get("/search", searchAIApps);
 router7.get("/clear", clearAllApps);
-router7.post("/init", initUniversalAIApps);
+router7.post("/init", initUniversalAIAppsSQL);
 var UniversalAIAppRouters_default = router7;
 
 // src/universal-app-store/router/AppSearchRouters.ts
