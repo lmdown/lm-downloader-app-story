@@ -53,16 +53,19 @@ html[lite-layout] {
   text-decoration: none;
 }
 
+html[running-window] a,
 .running-window-main a {
   color: rgb(var(--v-theme-primary));
   text-decoration: none;
 }
 
+html[running-window] a:hover,
 .running-window-main a:hover {
   color: rgb(var(--v-theme-primary));
   text-decoration: underline;
 }
 
+html[running-window] a:active,
 .running-window-main a:active {
   color: rgb(var(--v-theme-primary));
 }
@@ -134,4 +137,14 @@ pre {
   code {
     background-color: #f9f9f9;
   }
+}
+
+html[main-window] .v-btn--variant-outlined,
+html[running-window] .v-btn--variant-outlined {
+  /* color: rgba(0, 0, 0, 0.75); */
+  font-size: 0.9rem;
+  border-color: rgba(0, 0, 0, 0.25);
+  border-width: 1px;
+  background-color: #FFF;
+  transition: none;
 }
