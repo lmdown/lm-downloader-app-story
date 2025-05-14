@@ -1,0 +1,1 @@
+const a=async()=>(await axios.get("https://lmdstatic.oss-cn-shanghai.aliyuncs.com/site/tutorial/data/list-home.json")).data,t=async a=>(await axios.get(`https://lmdstatic.oss-cn-shanghai.aliyuncs.com/site/tutorial/data/${a}.json`)).data;export{t as a,a as g};

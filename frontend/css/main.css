@@ -37,18 +37,18 @@ html[lite-layout] {
   overflow: hidden
 }
 
-.lmd-application a {
+html[main-window] a {
   color: rgba(0, 0, 0, 0.75);
   text-decoration: none;
   text-decoration-line: none;
 }
 
-.lmd-application a:hover {
+html[main-window] a:hover {
   color: rgb(var(--v-theme-primary));
   text-decoration: none;
 }
 
-.lmd-application a:active {
+html[main-window] a:active {
   color: rgb(var(--v-theme-primary));
   text-decoration: none;
 }
@@ -147,4 +147,20 @@ html[running-window] .v-btn--variant-outlined {
   border-width: 1px;
   background-color: #FFF;
   transition: none;
+}
+
+html[main-window] .v-img__img--preload,
+html[running-window] .v-img__img--preload {
+  filter: none;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
