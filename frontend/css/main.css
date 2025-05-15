@@ -101,7 +101,9 @@ pre {
   text-align: center; */
   width: 100%;
 }
-#app .v-btn {
+
+html[main-window] .v-btn,
+html[running-window] .v-btn {
   text-transform: none;
 }
 
