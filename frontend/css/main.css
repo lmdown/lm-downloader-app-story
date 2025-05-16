@@ -106,6 +106,7 @@ pre {
 html[main-window] .v-btn,
 html[running-window] .v-btn {
   text-transform: none;
+  border-radius: 8px; 
 }
 
 #app .vel-btns-wrapper .btn__close {
