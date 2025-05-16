@@ -24,7 +24,8 @@
 html[main-window] {
   min-width: 1000px;
   min-height: 500px;
-  overflow: auto
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 html[running-window] {
   min-width: 400px;
