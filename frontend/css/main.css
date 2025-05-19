@@ -30,7 +30,7 @@ html[main-window] {
 html[running-window] {
   min-width: 400px;
   min-height: 300px;
-  /* overflow: auto */
+  overflow: auto;
 }
 html[lite-layout] {
   min-width: unset;
