@@ -21,7 +21,7 @@
 
 ## 许可证
 
-本项目采用 [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0) 进行许可 - 版权 © 2025 lmdown
+本项目采用 [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0) 进行许可 - 版权 © 2025 LM Downloader
 
 This project is licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
