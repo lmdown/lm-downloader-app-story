@@ -1,1 +1,1 @@
-import{c as i}from"./pinia.js";import"./index.js";i();
+import{d as t,c as a}from"./pinia.js";import{a as p}from"./lmd-system.js";const s=t("lmAIApp",{state:()=>({lmApps:[],currentLmApp:{}}),actions:{async fetchLMApps(){try{const t=await p.get("/app-store/ai-app-info");this.lmApps=t.data.data}catch(t){console.error("Failed to fetch apps:",t)}},async fetchApp(t){try{const a=await p.get(`/app-store/ai-app-info/${t}`);this.currentLmApp=a.data}catch(a){console.error("Failed to fetch app:",a)}}}});a();export{s as u};

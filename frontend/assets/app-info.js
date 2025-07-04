@@ -1,1 +1,1 @@
-import{b as a}from"./index.js";const t=async t=>(await a.get(`/app-store/ai-app-info/?ids=${t}`)).data.data,i=async t=>{if(!t)return null;return(await a.get(`/app-store/ai-app-info/install-name/${t}`)).data};export{i as a,t as g};
+import{a}from"./lmd-system.js";const t=async t=>(await a.get(`/app-store/ai-app-info/?ids=${t}`)).data.data,s=async t=>{if(!t)return null;return(await a.get(`/app-store/ai-app-info/install-name/${t}`)).data};export{s as a,t as g};
