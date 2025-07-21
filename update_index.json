@@ -1,11 +1,11 @@
 {
-  "version": "1753093725",
+  "version": "1753108442",
   "desktop_app": {
     "min_version": "1.0.8"
   },
   "story_packages": {
     "main_pack_file_name": "master.zip",
-    "main_pack_prefix": "https://d-1314735556.cos.ap-shanghai.myqcloud.com/pkgs/app-story/pack/1753093725/"
+    "main_pack_prefix": "https://d-1314735556.cos.ap-shanghai.myqcloud.com/pkgs/app-story/pack/1753108442/"
   },
   "frontend": {
     "path": "frontend",
